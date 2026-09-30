@@ -30,13 +30,18 @@ class NC3000:
 
         self._curve: dict[int, msg.curve.CurveResponse] = {}
 
+    def disconnected(self, client: bleak.BleakClient) -> None:
+        if self._client is not None:
+            logger.warning(f"Disconnected from {client.address}")
+
     async def __aenter__(self):
         logging.debug(f"Connecting to {self._device.address}...")
         self._client = await bleak_retry_connector.establish_connection(
             bleak_retry_connector.BleakClientWithServiceCache,
             self._device,
-            self._device.name or "Unknown Device",
+            name=self._device.name or "Unknown Device",
             max_attempts=3,
+            disconnected_callback=self.disconnected,
             )
 
         await self._client.start_notify(
@@ -52,9 +57,10 @@ class NC3000:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        print("Disconnecting")
-        await self._client.disconnect()
-        self._client = None
+        logger.debug("Disconnecting from {self._device.address}")
+        client = self._client
+        self._client = None  # mark client as None to suppress disconnected warning
+        await client.disconnect()
 
     def assert_connected(self) -> None:
         if self._client is None:

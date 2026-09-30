@@ -9,8 +9,11 @@ class CurveMsg:
     channel: int
     pages: int
     page: int
-    unknown4: int  # sample interval?
-    voltages_mV: list[int]  # up to 100 measurements per page
+    iteration: int  # Incremented each time the time-resolution changes
+    voltages_mV: list[int]  # up to 100 measurements per page.
+    # Typically, new values are appended to the `voltages_mV` list. If this page is full (100 voltages),
+    # a new page is added. When 300 `voltages` are accumulated, the time resolution is halved, `iteration` is
+    # bumped and the list shrinks to 150 voltages.
 
     @classmethod
     def from_bytes(cls, buf: bytes) -> CurveMsg:
@@ -21,7 +24,7 @@ class CurveMsg:
         o.channel = buf[1]
         o.pages = buf[2]
         o.page = buf[3]
-        o.unknown4 = buf[4]
+        o.iteration = buf[4]
 
         o.voltages_mV = []
         i = 5
@@ -38,11 +41,18 @@ class CurveResponse:
         self.value: asyncio.Future[list[CurveMsg]] = asyncio.Future()
 
     def add_page(self, msg: CurveMsg) -> None:
-        # ASSUMPTION: pages always arrive in order
+        # ASSUMPTION (checked): pages always arrive in order
         if msg.page == len(self._pages) + 1:
+            if msg.page != 1:
+                if msg.iteration != self._pages[0].iteration:
+                    logger.warning(f"Received page {msg.page}/{msg.pages} for iteration {msg.iteration}, "
+                                   f"but previous page is from iteration {self._pages[0].iteration}")
+                    return
+
             self._pages[msg.page] = msg
         else:
             logger.warning(f"Received page {msg.page}/{msg.pages}, but still missing page {len(self._pages) + 1}")
+            return
 
         if len(self._pages) == msg.pages:
             self.value.set_result(list(self._pages.values()))

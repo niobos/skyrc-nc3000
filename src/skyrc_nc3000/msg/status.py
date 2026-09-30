@@ -81,7 +81,8 @@ class Mode(enum.Enum):
     Idle = 0
     Charging = 2
     Discharging = 3
-    Done = 6
+    Charged = 5
+    Discharged = 6
 
 
 T = typing.TypeVar("T", bound=enum.Enum)
