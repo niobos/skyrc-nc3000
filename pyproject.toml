@@ -5,4 +5,5 @@ requires-python = ">=3.14"
 dependencies = [
     "bleak>=3.0.2",
     "bleak-retry-connector>=4.7.1",
+    "tabulate>=0.10.0",
 ]
