@@ -6,6 +6,7 @@ import sys
 import time
 
 import tabulate
+from ansi_escapes import ansi_escapes
 
 from . import NC3000
 from . import msg
@@ -113,6 +114,10 @@ async def status(con: NC3000, args: argparse.Namespace) -> int:
         rv = await status_once(con, args, csv_writer)
         if args.every is None:
             return rv
-        else:
-            await asyncio.sleep(args.every)
+        # else:
+        await asyncio.sleep(args.every)
+
+        if args.format == 'table':
+            print(ansi_escapes.cursorUp(2+8), end='')
+
     # unreachable

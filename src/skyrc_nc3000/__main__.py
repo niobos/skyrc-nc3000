@@ -22,7 +22,7 @@ action_parser = parser.add_subparsers(required=True)
 
 status_subparser = action_parser.add_parser('status')
 status_subparser.set_defaults(action=status)
-status_subparser.add_argument("--format", choices=['json', 'csv', 'table'], default='table')
+status_subparser.add_argument("--format", choices=['table', 'csv', 'json'], default='table')
 status_subparser.add_argument("--every", type=int,
                               help="Request status in a loop, every N seconds until interrupted")
 
