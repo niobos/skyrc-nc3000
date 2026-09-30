@@ -40,8 +40,9 @@ class ChannelStatus:
     time_s: int
     unknown12: bytes
     internal_resistance_mOhm: int
+    status: Status | int
     mode: Mode | int
-    unknown15: bytes  # seen: 0000, 0100
+    unknown16: int
 
     @classmethod
     def from_bytes(cls, buf: bytes) -> ChannelStatus:
@@ -58,8 +59,9 @@ class ChannelStatus:
         o.time_s = int.from_bytes(buf[10:12], byteorder="big", signed=False)
         o.unknown12 = buf[12:13]
         o.internal_resistance_mOhm = int.from_bytes(buf[13:14], byteorder="big", signed=False)
-        o.mode = try_enum(Mode, buf[14])
-        o.unknown15 = buf[15:17]
+        o.status = try_enum(Status, buf[14])
+        o.mode = try_enum(Mode, buf[15])
+        o.unknown16 = buf[16]
         return o
 
     def __str__(self) -> str:
@@ -73,17 +75,26 @@ class ChannelStatus:
                 f"t={self.time_s}s "
                 f"{self.unknown12.hex(sep=' ')} "
                 f"IR={self.internal_resistance_mOhm}mOhm "
+                f"{self.status} "
                 f"{self.mode} "
-                f"{self.unknown15.hex(sep=' ')}"
+                f"{self.unknown16}"
                 f"]")
 
-class Mode(enum.Enum):
+class Status(enum.Enum):
     Idle = 0
     Charging = 2
     Discharging = 3
     Charged = 5
     Discharged = 6
 
+class Mode(enum.Enum):
+    Charge = 0
+    Discharge = 1
+    BreakIn = 2
+    Cycle = 3
+    MaxBoost = 4
+    Turbo = 5
+    ThreeStageCharging = 6
 
 T = typing.TypeVar("T", bound=enum.Enum)
 def try_enum(enum_class: type[T], value: int) -> T | int:

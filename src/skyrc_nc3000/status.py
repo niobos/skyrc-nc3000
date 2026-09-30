@@ -15,6 +15,7 @@ CSV_COLS = [
     "time",
     "channel",
     "mode",
+    "status",
     "current_mA",
     "voltage_mV",
     "delta_V_mV",
@@ -29,6 +30,7 @@ CSV_COLS = [
 
 def channel_to_dict(ch: msg.status.ChannelStatus) -> dict:
     return {
+        "status": str(ch.status).lstrip("Status."),
         "mode": str(ch.mode).lstrip("Mode."),
         "current_mA": ch.current_mA,
         "voltage_mV": ch.voltage_mV,
@@ -39,7 +41,7 @@ def channel_to_dict(ch: msg.status.ChannelStatus) -> dict:
         "unknown4": ch.unknown4,
         "unknown8": ch.unknown8.hex(sep=' '),
         "unknown12": ch.unknown12.hex(sep=' '),
-        "unknown15": ch.unknown15.hex(sep=' '),
+        "unknown16": ch.unknown16,
     }
 
 async def status_once(con: NC3000, args: argparse.Namespace, csv_writer: csv.DictWriter = None) -> int:
@@ -65,6 +67,7 @@ async def status_once(con: NC3000, args: argparse.Namespace, csv_writer: csv.Dic
     elif args.format == 'table':
         cols = ["channel",
                 "mode",
+                "status",
                 "current_mA",
                 "voltage_mV",
                 "delta_V_mV",
@@ -74,7 +77,7 @@ async def status_once(con: NC3000, args: argparse.Namespace, csv_writer: csv.Dic
                 "unknown4",
                 "unknown8",
                 "unknown12",
-                "unknown15"]
+                "unknown16"]
         rows = []
         for i, channel in enumerate(status.channel):
             channel_data_dict = channel_to_dict(channel)
