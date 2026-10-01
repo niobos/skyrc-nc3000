@@ -118,6 +118,6 @@ async def status(con: NC3000, args: argparse.Namespace) -> int:
         await asyncio.sleep(args.every)
 
         if args.format == 'table':
-            print(ansi_escapes.cursorUp(2+8), end='')
+            print(ansi_escapes.eraseLines(2+8+1), end='')
 
     # unreachable

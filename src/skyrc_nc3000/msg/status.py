@@ -82,8 +82,10 @@ class ChannelStatus:
 
 class Status(enum.Enum):
     Idle = 0
+    # 1?
     Charging = 2
     Discharging = 3
+    Rest = 4
     Charged = 5
     Discharged = 6
 
